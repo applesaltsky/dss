@@ -1,0 +1,79 @@
+digraph {
+	center=true compound=true label="TEST GRAPH" labelloc=t rank=same rankdir=LR
+	subgraph input {
+		graph [cluster=true label=input]
+		node [shape=circle]
+		c [label=1 fillcolor=lightgray style=filled]
+		i1 [label=x1]
+		i2 [label=x2]
+	}
+	subgraph hidden1 {
+		graph [cluster=true label=hidden1]
+		node [shape=circle]
+		h1c [label=1 fillcolor=lightgray style=filled]
+		subgraph h1n1 {
+			graph [label=""]
+			h1n1a [label=a1]
+			h1n1z [label=z1]
+			h1n1a -> h1n1z [label="h()"]
+		}
+		subgraph h1n2 {
+			graph [label=""]
+			h1n2a [label=a2]
+			h1n2z [label=z2]
+			h1n2a -> h1n2z [label="h()"]
+		}
+		subgraph h1n3 {
+			graph [label=""]
+			h1n3a [label=a3]
+			h1n3z [label=z3]
+			h1n3a -> h1n3z [label="h()"]
+		}
+	}
+	subgraph h2 {
+		graph [cluster=true label=hidden2]
+		node [shape=circle]
+		h2c [label=1 fillcolor=lightgray style=filled]
+		subgraph h2n1 {
+			graph [label=""]
+			h2n1a [label=a1]
+			h2n1z [label=z1]
+			h2n1a -> h2n1z [label="h()"]
+		}
+		subgraph h2n2 {
+			graph [label=""]
+			h2n2a [label=a2]
+			h2n2z [label=z2]
+			h2n2a -> h2n2z [label="h()"]
+		}
+	}
+	subgraph out {
+		graph [cluster=true label=output]
+		node [shape=circle]
+		o1 [label=y1]
+		o2 [label=y2]
+	}
+	c -> h1n1a [label=b]
+	c -> h1n2a [label=b]
+	c -> h1n3a [label=b]
+	i1 -> h1n1a [label=w]
+	i1 -> h1n2a [label=w]
+	i1 -> h1n3a [label=w]
+	i2 -> h1n1a [label=w]
+	i2 -> h1n2a [label=w]
+	i2 -> h1n3a [label=w]
+	h1c -> h2n1a [label=b]
+	h1c -> h2n2a [label=b]
+	h1n1z -> h2n1a [label=w]
+	h1n1z -> h2n2a [label=w]
+	h1n2z -> h2n1a [label=w]
+	h1n2z -> h2n2a [label=w]
+	h1n3z -> h2n1a [label=w]
+	h1n3z -> h2n2a [label=w]
+	h2c -> o1 [label=b]
+	h2c -> o2 [label=b]
+	h2n1z -> o1 [label=w]
+	h2n1z -> o2 [label=w]
+	h2n2z -> o1 [label=w]
+	h2n2z -> o2 [label=w]
+}

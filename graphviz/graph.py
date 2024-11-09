@@ -1,4 +1,5 @@
 #https://www.graphviz.org/docs/attrs/arrowtail/
+#dot -Tpng C:\Users\User\Desktop\Programming\dss\graph\first.gv > output.png
 
 import graphviz
 from pathlib import Path
