@@ -19,3 +19,7 @@ class activation_func:
     #for output
     def identity_function(x):
         return x
+    
+    def softmax(x):
+        c = np.max(x)  #prevent overflow
+        return np.exp(x - c)/np.sum(np.exp(x - c))

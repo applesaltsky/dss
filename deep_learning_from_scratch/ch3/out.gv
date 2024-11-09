@@ -1,14 +1,15 @@
 digraph {
 	center=true compound=true labelloc=t rank=same rankdir=LR
 	subgraph input {
-		graph [cluster=true label=input]
+		graph [cluster=true label=input_784]
 		node [shape=circle]
 		ic [label=1 fillcolor=lightgray style=filled]
 		i0 [label=x0]
 		i1 [label=x1]
+		i2 [label=x2]
 	}
 	subgraph hidden1 {
-		graph [cluster=true label=sigmoid]
+		graph [cluster=true label=sigmoid_50]
 		node [shape=circle]
 		hidden1c [label=1 fillcolor=lightgray style=filled]
 		subgraph hidden1n1 {
@@ -29,15 +30,9 @@ digraph {
 			hidden1n2z [label=z2]
 			hidden1n2a -> hidden1n2z [label="h()"]
 		}
-		subgraph hidden1n1 {
-			graph [label=""]
-			hidden1n3a [label=a3]
-			hidden1n3z [label=z3]
-			hidden1n3a -> hidden1n3z [label="h()"]
-		}
 	}
 	subgraph hidden2 {
-		graph [cluster=true label=sigmoid]
+		graph [cluster=true label=relu_100]
 		node [shape=circle]
 		hidden2c [label=1 fillcolor=lightgray style=filled]
 		subgraph hidden2n1 {
@@ -59,41 +54,31 @@ digraph {
 			hidden2n2a -> hidden2n2z [label="h()"]
 		}
 	}
-	subgraph hidden3 {
-		graph [cluster=true label=relu]
-		node [shape=circle]
-		hidden3c [label=1 fillcolor=lightgray style=filled]
-		subgraph hidden3n1 {
-			graph [label=""]
-			hidden3n0a [label=a0]
-			hidden3n0z [label=z0]
-			hidden3n0a -> hidden3n0z [label="h()"]
-		}
-		subgraph hidden3n1 {
-			graph [label=""]
-			hidden3n1a [label=a1]
-			hidden3n1z [label=z1]
-			hidden3n1a -> hidden3n1z [label="h()"]
-		}
-	}
 	subgraph output {
-		graph [cluster=true label=identity_function]
+		graph [cluster=true label=softmax_10]
 		node [shape=circle]
+		ao0 [label=a0]
 		o0 [label=y0]
+		ao0 -> o0 [label="h()"]
+		ao1 [label=a1]
 		o1 [label=y1]
+		ao1 -> o1 [label="h()"]
+		ao2 [label=a2]
+		o2 [label=y2]
+		ao2 -> o2 [label="h()"]
 	}
 	ic -> hidden1n0a
 	ic -> hidden1n1a
 	ic -> hidden1n2a
-	ic -> hidden1n3a
 	i0 -> hidden1n0a
 	i0 -> hidden1n1a
 	i0 -> hidden1n2a
-	i0 -> hidden1n3a
 	i1 -> hidden1n0a
 	i1 -> hidden1n1a
 	i1 -> hidden1n2a
-	i1 -> hidden1n3a
+	i2 -> hidden1n0a
+	i2 -> hidden1n1a
+	i2 -> hidden1n2a
 	hidden1c -> hidden2n0a
 	hidden1c -> hidden2n1a
 	hidden1c -> hidden2n2a
@@ -106,21 +91,16 @@ digraph {
 	hidden1n2z -> hidden2n0a
 	hidden1n2z -> hidden2n1a
 	hidden1n2z -> hidden2n2a
-	hidden1n3z -> hidden2n0a
-	hidden1n3z -> hidden2n1a
-	hidden1n3z -> hidden2n2a
-	hidden2c -> hidden3n0a
-	hidden2c -> hidden3n1a
-	hidden2n0z -> hidden3n0a
-	hidden2n0z -> hidden3n1a
-	hidden2n1z -> hidden3n0a
-	hidden2n1z -> hidden3n1a
-	hidden2n2z -> hidden3n0a
-	hidden2n2z -> hidden3n1a
-	hidden3c -> o0
-	hidden3c -> o1
-	hidden3n0z -> o0
-	hidden3n0z -> o1
-	hidden3n1z -> o0
-	hidden3n1z -> o1
+	hidden2c -> ao0
+	hidden2c -> ao1
+	hidden2c -> ao2
+	hidden2n0z -> ao0
+	hidden2n0z -> ao1
+	hidden2n0z -> ao2
+	hidden2n1z -> ao0
+	hidden2n1z -> ao1
+	hidden2n1z -> ao2
+	hidden2n2z -> ao0
+	hidden2n2z -> ao1
+	hidden2n2z -> ao2
 }
