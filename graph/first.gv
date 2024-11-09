@@ -1,0 +1,22 @@
+digraph {
+	compound=true label="TEST GRAPH" labelloc=t rankdir=LR
+	START [label=START shape=Mdiamond]
+	A [label=PYTHON]
+	B [label=JAVASCRIPT]
+	C [label=JAVA]
+	subgraph GR1 {
+		graph [cluster=true label="low level language"]
+		node [color=green fillcolor=lightgray fontcolor=black label=gr1 shape=box style=filled]
+		D [label=RUST]
+		E [label="C++"]
+		F [label=C]
+	}
+	G [label=GO]
+	END [label=END shape=Mdiamond]
+	START -> A
+	A -> B [label="A to B"]
+	B -> C
+	C -> E [lhead=GR1]
+	E -> G [ltail=GR1]
+	G -> END [shape=Msquare]
+}
