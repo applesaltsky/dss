@@ -16,6 +16,7 @@ class Network:
         self.layers = []
 
     def add_layers(self,input_cnt:int,output_cnt:int,activation_func:Callable,seed:Union[None,int] = None):
+        #check input
         if seed is not None:
             if not isinstance(seed,int):
                 raise ValueError('seed should be integer')
@@ -32,6 +33,7 @@ class Network:
             if not (last_ouput_cnt == input_cnt):
                 raise ValueError(f'input val should be eqult to output cnt of last layer. {last_ouput_cnt}.')
 
+        #to do : define layer class...  
         self.layers.append({'input_cnt':input_cnt,
                             'output_cnt':output_cnt,
                             'activation_func':activation_func,
@@ -48,14 +50,14 @@ class Network:
         if not isinstance(input_val,np.ndarray):
             raise ValueError('input should be np.ndarray.')
 
-        if not (input_val.ndim == 1):
-            raise ValueError(f'input ndim should be 1.')
+        #if not (input_val.ndim == 1):
+        #    raise ValueError(f'input ndim should be 1.')
         
         if not (len(self.layers) > 2):
             raise IndexError('The list of layers must be at least 2 in length.')
 
         input_len = self.layers[0]['input_cnt']
-        if not (input_len == len(input_val)):
+        if not (input_len == input_val.shape[-1]):
             raise ValueError(f'input length should be ({input_len}).')
         
         #prediction
@@ -183,15 +185,15 @@ class Network:
 
 network = Network()
 #network = network.load()
-network.add_layers(*(784,50,util.activation_func.sigmoid))          
-network.add_layers(*(50,100,util.activation_func.relu)) 
-network.add_layers(*(100,10,util.activation_func.softmax))
+network.add_layers(*(2,4,util.activation_func.sigmoid))          
+network.add_layers(*(4,3,util.activation_func.relu)) 
+network.add_layers(*(3,2,util.activation_func.softmax))
 
-#input_val = np.array([1,2])
-#predict_val = network.predict(input_val,verbose=True)
-#print(predict_val)
+input_val = np.array([1,2])
+predict_val = network.predict(input_val,verbose=True)
+print(predict_val)
 
 #network.dump()
-print(network.draw())
+#print(network.draw())
 
 

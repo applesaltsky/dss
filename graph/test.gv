@@ -1,0 +1,15 @@
+digraph {
+    compound=true label="TEST GRAPH" labelloc=t rankdir=LR
+
+    START [label=START shape=Mdiamond]
+	A [label=PYTHON]
+	B [label=JAVASCRIPT]
+	C [label=JAVA]
+    END [label=END shape=Mdiamond]
+
+    START -> A
+    A -> B  [label="A to B"]
+    B -> C
+    C -> END
+
+}
