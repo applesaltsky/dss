@@ -36,10 +36,12 @@ class Network:
         #to do : define layer class...  
         self.layers.append({'input_cnt':input_cnt,
                             'output_cnt':output_cnt,
-                            'activation_func':activation_func,
+                            'activation_func':activation_func(),
                             'activation_name':activation_func.__name__,
                             'weight':np.random.randn(input_cnt,output_cnt),
-                            'bias':np.random.randn(output_cnt)
+                            'bias':np.random.randn(output_cnt),
+                            'affine':None,
+                            'output':None,
                             })
         
         if seed is not None:
@@ -58,16 +60,16 @@ class Network:
 
         input_len = self.layers[0]['input_cnt']
         if not (input_len == input_val.shape[-1]):
-            raise ValueError(f'input length should be ({input_len}).')
+            raise ValueError(f'input length should be {input_len}.')
         
         #prediction
         temp = input_val
         if verbose:
             print(input_val)
         for layer in self.layers:
-            a = np.dot(temp, layer['weight']) + layer['bias']
-            z = layer['activation_func'](a)
-            temp = z
+            layer['affine'] = np.dot(temp, layer['weight']) + layer['bias']
+            layer['output'] = layer['activation_func'](layer['affine'])
+            temp = layer['output']
             if verbose:
                 print(temp)
 

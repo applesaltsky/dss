@@ -26,15 +26,6 @@ class trainer:
         
         return grad
     
-    def gradient_descent(self, f, init_w, lr=0.01, step_num = 100):
-        w = init_w
-        his = []
-        for i in range(step_num):
-            his.append(w.copy())
-            grad = self.numerical_gradient(f, w)
-            w -= lr * grad
-        return his
-
 class activation_func:
     #for hidden layer
     def step_func(x:Union[np.ndarray,int,float])->int:
@@ -44,35 +35,59 @@ class activation_func:
         else:
             return 1 if x > 0 else 0
 
-    def sigmoid(x:Union[np.ndarray,int,float]):
-        return 1 / (1+np.exp(-1*x))
+    class sigmoid:
+        def __call__(self,x:Union[np.ndarray,int,float]):
+            return 1 / (1+np.exp(-1*x))
+        
+        def backward(self,x):
+            return self.__call__(x) * (1 - self.__call__(x))
+        
+    class relu:
+        def __call__(self,x:Union[np.ndarray,int,float]):
+            return np.maximum(0,x)
     
-    def relu(x:Union[np.ndarray,int,float]):
-        return np.maximum(0,x)
-    
-    def leaky_relu(x:Union[np.ndarray,int,float]):
-        return np.maximum(0.01*x,x)
+    class leaky_relu:
+        def __call__(self,x:Union[np.ndarray,int,float]):
+            return np.maximum(0.01*x,x)
     
     #for output
-    def identity_function(x):
-        return x
+    class identity_function:
+        def __call__(self,x):
+            return x
     
     #for classification output
-    def softmax(x):
-        c = np.max(x)  #prevent overflow
-        return np.exp(x - c)/np.sum(np.exp(x - c))
+    class softmax:
+        def __call__(self,x):
+            c = np.max(x)  #prevent overflow
+            return np.exp(x - c)/np.sum(np.exp(x - c))
+        
+        def backward(self,x):
+            identity_backward = self.__call__(x) * ( 1- self.__call__(x) )     
+            identity_mtx = identity_backward * np.identity(x.shape[0],dtype=float) 
+
+            xv, yv = np.meshgrid(x, x)
+            non_identity_backward = -1 * self.__call__(xv) * self.__call__(yv)
+            non_identity_mtx =  non_identity_backward * (np.identity(x.shape[0]) != 1).astype(float)
+
+            return identity_mtx + non_identity_mtx
+            
+            
     
 
 class loss_func:   
     #for clasification
-    def cross_entropy_error(predict_val:np.ndarray, eval_val:np.ndarray)->float:
-        if predict_val.ndim == 1:
-            predict_val = predict_val.reshape(1,predict_val.size)
-            eval_val = eval_val.reshape(1,eval_val.size)
+    class cross_entropy_error:
+        def __call__(self, predict_val:np.ndarray, eval_val:np.ndarray)->float:
+            if predict_val.ndim == 1:
+                predict_val = predict_val.reshape(1,predict_val.size)
+                eval_val = eval_val.reshape(1,eval_val.size)
+            
+            batch_size = predict_val.shape[0]
+            delta = 1e-7
+            return -np.sum(eval_val * np.log(predict_val + delta)) / batch_size
         
-        batch_size = predict_val.shape[0]
-        delta = 1e-7
-        return -np.sum(eval_val * np.log(predict_val + delta)) / batch_size
+        def backward(self, predict_val, eval_val):
+            return -1 * (eval_val / predict_val)
 
     #for regression
     def sum_squares_error(predict_val:np.ndarray, eval_val:np.ndarray)->float:
@@ -94,3 +109,9 @@ class datasets:
     def load_mnist():
         X, y = fetch_openml("mnist_784", version=1, return_X_y=True, as_frame=False)
         return X, y
+    
+if __name__ == "__main__":
+    t = activation_func.sigmoid()
+    print(t(3))
+    print(t.backward(3))
+    print(t.__class__.__name__)

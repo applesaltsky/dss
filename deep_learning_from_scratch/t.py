@@ -1,8 +1,6 @@
 import util
+import numpy as np
 
-
-def add(a,b):
-    return a+b
-
-print(add.__name__)
-print(util.activation_func.step_func.__name__)
+a = np.ones((4,5))
+b = np.ones((5,3))
+print((a.reshape((4,1,5)) @ b).shape)

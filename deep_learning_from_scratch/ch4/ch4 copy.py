@@ -38,9 +38,11 @@ class Network:
         self.layers.append({'input_cnt':input_cnt,
                             'output_cnt':output_cnt,
                             'activation_func':activation_func,
-                            'activation_name':activation_func.__name__,
+                            'activation_name':activation_func.__class__.__name__,
                             'weight':np.random.randn(input_cnt,output_cnt),
-                            'bias':np.random.randn(output_cnt)
+                            'bias':np.random.randn(output_cnt),
+                            'affine':None,
+                            'output':None,
                             })
         
         if seed is not None:
@@ -66,15 +68,15 @@ class Network:
         if verbose:
             print(input_val)
         for layer in self.layers:
-            a = np.dot(temp, layer['weight']) + layer['bias']
-            z = layer['activation_func'](a)
-            temp = z
+            layer['affine'] = np.dot(temp, layer['weight']) + layer['bias']
+            layer['output'] = layer['activation_func'](layer['affine'])
+            temp = layer['output']
             if verbose:
                 print(temp)
 
         return temp
     
-    def loss(self, input_val, eval_val, loss_func = util.loss_func.cross_entropy_error):
+    def loss(self, input_val, eval_val, loss_func = util.loss_func.cross_entropy_error()):
         predict_val = self.predict(input_val)
         return loss_func(predict_val, eval_val)
     
@@ -83,23 +85,27 @@ class Network:
         tmp = (np.argmax(predict_val, axis=1) == np.argmax(eval_val,axis=1))
         return np.sum(tmp)/tmp.shape[0]
     
-    def train_one_step(self, input_val, eval_val, lr = 0.01, batchsize = None):
+    def train_one_step(self, input_val, eval_val, lr = 0.01, batchsize = None, loss_func=util.loss_func.cross_entropy_error()):
         for i in range(0,input_val.shape[0],batchsize):
             #print(i,min(i+batchsize,input_val.shape[0]))
             input_val_batch = input_val[i:min(i+batchsize,input_val.shape[0]),:]
             eval_val_batch = eval_val[i:min(i+batchsize,eval_val.shape[0]),:]
-            loss_w = lambda w : self.loss(input_val=input_val_batch,eval_val=eval_val_batch)
+            loss_w = lambda w : self.loss(input_val=input_val_batch, eval_val=eval_val_batch, loss_func=loss_func)
             for layer in self.layers:
                 grad_w = util.trainer().numerical_gradient(loss_w,layer['weight'])
                 grad_b = util.trainer().numerical_gradient(loss_w,layer['bias'])
                 layer['weight'] -= lr * grad_w
                 layer['bias'] -= lr * grad_b
 
-    def train(self, input_val, eval_val, lr = 0.01, step_num = 100, batchsize = 100):
+    def train(self, input_val, eval_val, lr = 0.01, step_num = 100, batchsize = 100, saved=True, filepath=None, loss_func=util.loss_func.cross_entropy_error()):
         for i in range(step_num):
             if i % 1 == 0:
-                print(datetime.datetime.now(), f'step : {i}/{step_num}')
-            self.train_one_step(input_val, eval_val, lr, batchsize)
+                print(datetime.datetime.now(), f'step : {i}/{step_num}', f'accuracy : {self.accuracy(input_val,eval_val)}')
+            self.train_one_step(input_val, eval_val, lr, batchsize, loss_func=loss_func)
+            
+            if saved:
+                self.dump(filepath)
+                print(f'saved.')
 
     def draw(self,filepath:Union[str,Path,None]=None,view:bool=True)->str:
         if not (len(self.layers) > 2):
@@ -212,10 +218,10 @@ class Network:
         return self
 
 network = Network()
-network = network.load(r'C:\Users\User\Desktop\Programming\dss\deep_learning_from_scratch\ch4\mnist.pickle')
-#network.add_layers(*(784,50,util.activation_func.sigmoid))          
-#network.add_layers(*(50,100,util.activation_func.sigmoid)) 
-#network.add_layers(*(100,10,util.activation_func.softmax))
+#network = network.load()
+network.add_layers(*(784,50,util.activation_func.sigmoid()))          
+network.add_layers(*(50,100,util.activation_func.sigmoid())) 
+network.add_layers(*(100,10,util.activation_func.softmax()))
 
 
 
@@ -237,8 +243,7 @@ print(accuracy)
 
 train_input_val = input_val[0:60000,:]
 train_eval_val = eval_val[0:60000,:]
-
-network.train(train_input_val, train_eval_val, lr = 0.04, step_num = 10, batchsize = 1000)
+network.train(train_input_val, train_eval_val, lr = 0.04, step_num = 10, batchsize = 1000, loss_func=util.loss_func.cross_entropy_error())
 #input_val_batch = input_val[0:200,:]
 #eval_val_batch = eval_val[0:200,:]
 #print(input_val_batch.shape)  #(200, 784)
@@ -246,7 +251,10 @@ network.train(train_input_val, train_eval_val, lr = 0.04, step_num = 10, batchsi
 
 #network.loss(input_val_batch,eval_val_batch)
 
-accuracy = network.accuracy(input_val,eval_val)
+
+test_input_val = input_val[60001:70000,:]
+test_eval_val = eval_val[60001:70000,:]
+accuracy = network.accuracy(test_input_val,test_eval_val)
 print(accuracy)
 
-network.dump(r'C:\Users\User\Desktop\Programming\dss\deep_learning_from_scratch\ch4\mnist2.pickle')
+network.dump()
