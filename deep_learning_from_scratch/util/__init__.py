@@ -26,6 +26,12 @@ class trainer:
         
         return grad
     
+    def matrix_gradient(self, a, b):
+        c = np.zeros((b.shape[1],b.shape[1],b.shape[0]))
+        for i in range(c.shape[0]):
+            c[i,i,:] = a
+        return c
+    
 class activation_func:
     #for hidden layer
     def step_func(x:Union[np.ndarray,int,float])->int:
@@ -40,7 +46,11 @@ class activation_func:
             return 1 / (1+np.exp(-1*x))
         
         def backward(self,x):
-            return self.__call__(x) * (1 - self.__call__(x))
+            a = (self.__call__(x) * (1 - self.__call__(x)))
+            b = np.zeros((len(a),len(a)))
+            for i in range(b.shape[0]):
+                b[i,i] = a[i]
+            return b
         
     class relu:
         def __call__(self,x:Union[np.ndarray,int,float]):

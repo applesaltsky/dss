@@ -89,46 +89,37 @@ class Network:
     
     def train_one_step(self, input_val, eval_val, lr = 0.01, batchsize = None, loss_func=util.loss_func.cross_entropy_error()):
         for i in range(0,input_val.shape[0],batchsize):
-            #print(i,min(i+batchsize,input_val.shape[0]))
             input_val_batch = input_val[i:min(i+batchsize,input_val.shape[0]),:]
-            #eval_val_batch = eval_val[i:min(i+batchsize,eval_val.shape[0]),:]
+            eval_val_batch = eval_val[i:min(i+batchsize,eval_val.shape[0]),:]
             self.predict(input_val_batch)
-            #loss_w = lambda w : self.loss(input_val=input_val_batch, eval_val=eval_val_batch, loss_func=loss_func)
             for idx_i in range(input_val_batch.shape[0]):
                 for idx, layer in enumerate(self.layers):
-                    #grad_w = util.trainer().numerical_gradient(loss_w,layer['weight'])
-                    #grad_b = util.trainer().numerical_gradient(loss_w,layer['bias'])
-                    #print(layer['input'].shape)  #(1000, 784)
-                    #print(layer['affine'].shape)
-                    #print(layer['activation_func'].backward(layer['affine']).shape)  #(1000, 50)
                     i_ = layer['input'][idx_i,:]
+                    w_ = layer['weight']
                     a_ = layer['affine'][idx_i,:]
                     h_ = layer['activation_func'].backward(a_)
-                    print(i_.shape)
-                    print(h_.shape)
-                    grad_w = i_ @ h_
+                    grad_w = h_ @ util.trainer().matrix_gradient(i_,w_)
+                    grad_b = h_
                     not_last_layer = idx+1 < len(layer)
                     if not_last_layer:
                         for after_layer in self.layers[idx+1:]:
-                            #print(grad_w.shape)
-                            #print(after_layer['weight'].shape)
-                            #print(after_layer['affine'].shape)
-                            #print(after_layer['activation_func'].backward(after_layer['affine']).shape)
-                            l_w = after_layer['weight'][idx_i,:]
+                            l_w = after_layer['weight']
                             l_a = after_layer['affine'][idx_i,:]
                             l_h = after_layer['activation_func'].backward(l_a)
-                            grad_w = grad_w @ l_w @ l_h
+                            grad_w = l_h @ l_w.T @ grad_w
+                            grad_b = l_h @ l_w.T @ grad_b
+                    
                     last_layer = self.layers[-1]
-                    predict_val = last_layer['output'][idx_i,:]
-                    grad_w = grad_w @ loss_func.backward(predict_val)
+                    predict_val_idx = last_layer['output'][idx_i,:]
+                    eval_val_idx = eval_val_batch[idx_i,:]
+                    b_ = loss_func.backward(predict_val_idx, eval_val_idx)
+                    grad_w = b_ @ grad_w
+                    grad_b = b_ @ grad_b
+                    print(grad_w.shape)
+                    print(grad_b.shape)
+                    grad_w = grad_w.T
+                    grad_b = grad_b.T
                     layer['weight'] -= lr * grad_w
-
-                    grad_b = np.ones_like(layer['affine']) @ layer['activation_func'].backward(layer['affine'])
-                    for after_layer in self.layers[idx+1:]:
-                        grad_b = grad_w @ after_layer['weight'] @ after_layer['activation_func'].backward(after_layer['affine'])
-                    last_layer = self.layers[-1]
-                    predict_val = last_layer['output']
-                    grad_b = grad_b @ loss_func.backward(predict_val)
                     layer['bias'] -= lr * grad_b
 
     def train(self, input_val, eval_val, lr = 0.01, step_num = 100, batchsize = 100, saved=True, filepath=None, loss_func=util.loss_func.cross_entropy_error()):
@@ -277,7 +268,7 @@ print(accuracy)
 
 train_input_val = input_val[0:60000,:]
 train_eval_val = eval_val[0:60000,:]
-network.train(train_input_val, train_eval_val, lr = 0.04, step_num = 10, batchsize = 1000, loss_func=util.loss_func.cross_entropy_error())
+network.train(train_input_val, train_eval_val, lr = 0.04, step_num = 100, batchsize = 1000, loss_func=util.loss_func.cross_entropy_error())
 #input_val_batch = input_val[0:200,:]
 #eval_val_batch = eval_val[0:200,:]
 #print(input_val_batch.shape)  #(200, 784)
